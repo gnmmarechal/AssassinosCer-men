@@ -100,7 +100,7 @@ PtEgyptianFraction EgyptianFractionCreate (PtFraction pfraction)	/* construtor i
 	Egipto->Size = 0;
 	
 	PtFraction copy;
-	PtNode nod;
+	
 	
 	while(FractionIsNull(pfraction) == 0){
 		PtFraction Frac = FractionCopy(pfraction);
@@ -117,23 +117,29 @@ PtEgyptianFraction EgyptianFractionCreate (PtFraction pfraction)	/* construtor i
 			return Egipto;			
 		}	
 		
-		nod = NodeCreate(copy);
+		PtNode nod = NodeCreate(copy);
 		
 		if(nod == NULL){
 			return NULL; // Erro NO_MEM já obtido na função NodeCreate 
 		}
 		
-		Egipto->Tail->PtNext = nod;
+		if(Egipto->Tail == NULL)
+			Egipto->Tail = nod;
+		else{
+			Egipto->Tail->PtNext = nod;
+		}
 		Egipto->Tail = nod;
+		
 		
 		if(Egipto->Head == NULL)
 			Egipto->Head = nod;
 		
+		
+		
+		Egipto->Size++;
+		printf("%d",Egipto->Size);
+		pfraction = FractionSubtraction(pfraction, nod->PtElem);
 		NodeDestroy(&nod);
-		
-		//Egipto -> Size++;
-		
-		pfraction = FractionSubtraction(pfraction, copy);
 	}
 	Error = OK;
 	Egipto->Complete = 1;
@@ -338,13 +344,13 @@ static PtFraction CreateUnitFraction (PtFraction *pfraction)
 PtNode NodeCreate (PtFraction pelem)	/* alocação do nó - node allocation */
 {
 	PtNode Node;
-
+	
 	if ((Node = (PtNode) malloc (sizeof (struct node))) == NULL)
     { Error = NO_MEM; return NULL; }
-
+	
 	Node->PtElem = pelem;		/* copiar o elemento - copy the element */
 	Node->PtNext = NULL;	/* apontar para a frente para NULL - next is null */
-
+	
 	Error = OK;
 	return Node;
 }
