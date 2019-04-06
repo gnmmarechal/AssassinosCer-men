@@ -104,7 +104,7 @@ PtEgyptianFraction EgyptianFractionCreate(PtFraction pfraction)	/* construtor in
 		
 		if(copy == NULL){
 			Error = NOT_PROPER;
-			return Egipto;
+			return NULL;
 		}
 		
 		Egipto -> Array[i] = copy;

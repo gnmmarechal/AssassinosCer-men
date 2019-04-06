@@ -92,16 +92,17 @@ PtEgyptianFraction EgyptianFractionCreate (PtFraction pfraction)	/* construtor i
 	}
 	
 	PtEgyptianFraction Egipto;
+	
 	if ((Egipto = (PtEgyptianFraction) malloc (sizeof (struct egyptianfraction))) == NULL){ 
 		Error = NO_MEM; 
 		return NULL; 
 	}
+	
 	Egipto->Complete = 0;
 	Egipto->Size = 0;
 	
 	PtFraction copy;
-	
-	
+
 	while(FractionIsNull(pfraction) == 0){
 		PtFraction Frac = FractionCopy(pfraction);
 		if (Frac == NULL) {
@@ -114,32 +115,25 @@ PtEgyptianFraction EgyptianFractionCreate (PtFraction pfraction)	/* construtor i
 		
 		if(copy == NULL){
 			Error = NOT_PROPER;
-			return Egipto;			
+			return NULL;		
 		}	
 		
 		PtNode nod = NodeCreate(copy);
 		
 		if(nod == NULL){
+			Error = NO_MEM;
 			return NULL; // Erro NO_MEM já obtido na função NodeCreate 
 		}
 		
-		if(Egipto->Tail == NULL)
-			Egipto->Tail = nod;
-		else{
-			Egipto->Tail->PtNext = nod;
-		}
-		Egipto->Tail = nod;
-		
-		
-		if(Egipto->Head == NULL)
+		if(Egipto->Head == NULL){
 			Egipto->Head = nod;
-		
-		
-		
+			Egipto->Tail = nod;
+		}else{
+			Egipto->Tail->PtNext = nod;
+			Egipto->Tail = nod;
+		}
 		Egipto->Size++;
-		printf("%d",Egipto->Size);
-		pfraction = FractionSubtraction(pfraction, nod->PtElem);
-		NodeDestroy(&nod);
+		pfraction = FractionSubtraction(pfraction,nod->PtElem);
 	}
 	Error = OK;
 	Egipto->Complete = 1;
@@ -257,6 +251,7 @@ int EgyptianFractionBelongs (PtEgyptianFraction pegyptian, PtFraction pfraction)
 	while(Head != NULL){
 		if(FractionEquals(Head->PtElem, pfraction))
 			return 1;
+		Head = Head->PtNext;
 	}
 	return 0;
 }
