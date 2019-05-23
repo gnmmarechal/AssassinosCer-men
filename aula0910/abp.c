@@ -109,20 +109,29 @@ void ABPDestroy (PtABP *ptree)
 static void DestroyTree (PtABPNode *proot)
 {
 	PtABPNode No = *proot;
-	// Verifica se tem filhos
-	if(No->elem
+
 	// Destruir o node da dir
-	DestroyTree(&No->PtRight
+	if(No->PtRight->PtElem)
+		DestroyTree(&No->PtRight);
 	// Destruir o node da esq
-	
+	if(No->PtLeft->PtElem)
+		DestroyTree(&No->PtLeft);
 	// Destruir o elem
+	FractionDestroy(&No->PtElem);
 }
 
 
 /* pesquisar a abp - bst search */
 int ABPSearch (PtABP ptree, PtFraction pelem)
 {
+	PtABP Tree = *ptree;
+	if (Tree == NULL) {
+		Error = NO_ABP;
+		return;
+	}
+	
 	/* Insira o seu código usando a SearchTree - Insert your code using SearchTree */
+	Error = OK;
 	return 0;
 }
 
@@ -197,9 +206,10 @@ static PtQueue ABPFillQueue (PtABP ptree)
 /* Reunião de duas abps usando a função ABPFillQueue - Reunion of two bsts using ABPFillQueue */
 void ABPReunion (PtABP ptree1, PtABP ptree2)
 {
-	/* Insira o seu código - Insert your code */
+    
 }
-
+		
+		
 /* Diferença de duas abps usando a função ABPFillQueue - Difference of two bsts using ABPFillQueue */
 void ABPDifference (PtABP ptree1, PtABP ptree2)
 {
