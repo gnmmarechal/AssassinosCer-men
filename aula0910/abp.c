@@ -117,22 +117,37 @@ static void DestroyTree (PtABPNode *proot)
 	if(No->PtLeft->PtElem)
 		DestroyTree(&No->PtLeft);
 	// Destruir o elem
-	FractionDestroy(&No->PtElem);
+	ABPNodeDestroy(&No);
 }
 
 
 /* pesquisar a abp - bst search */
 int ABPSearch (PtABP ptree, PtFraction pelem)
 {
-	PtABP Tree = *ptree;
-	if (Tree == NULL) {
+	PtABP Tree = ptree;
+	// ABP não existente
+	if(Tree == NULL){
 		Error = NO_ABP;
-		return;
+		return 0;
+	}
+	// ABP vazia
+	if(!Tree->Root){
+		Error = ABP_EMPTY;
+		return 0;
+	}
+	// Pointer NULL
+	if(pelem == NULL){
+		Error = NULL_PTR;
+		return 0;
 	}
 	
 	/* Insira o seu código usando a SearchTree - Insert your code using SearchTree */
-	Error = OK;
-	return 0;
+	Error = NO_ELEM;
+	SearchTree(Tree->Root, pelem);
+	if(Error== OK)
+		return 1;
+	else
+		return 0;
 }
 
 /*******************************************************************************
@@ -142,28 +157,107 @@ int ABPSearch (PtABP ptree, PtFraction pelem)
 
 static PtFraction SearchTree (PtABPNode proot, PtFraction pelem)
 {
-	/* Insira o seu código - Insert your code */
-	return NULL;
+	PtABPNode No = proot;
+	
+	if(FractionEquals(No->PtElem,pelem)){
+		Error = OK;
+	}
+	else{
+		SearchTree(proot->PtLeft,pelem);
+		if(Error!=OK)
+			SearchTree(proot->PtRight,pelem);
+	}
+	return pelem;
 }
 
 /* inserção não recursiva na abp - non recursive in bst */
 void ABPInsert (PtABP ptree, PtFraction pelem)	/*  */
 {
-	/* Insira o seu código - Insert your code */
+	// ABP não existente
+	if(ptree == NULL){
+		Error = NO_ABP;
+		return;
+	}
+	// Pointer NULL
+	if(pelem == NULL){
+		Error = NULL_PTR;
+		return;
+	}
+	PtABPNode No = ABPNodeCreate(pelem);
+	if(No == NULL){
+		Error = NO_MEM;
+		return;
+	}
+	
+	if(ptree->Root == NULL){
+		ptree->Root = No;
+	}else{
+		PtABPNode root = ptree->Root;
+		while(1){
+			if(FractionCompareTo(root->PtElem,pelem) > 0){ // Esquerda
+				if(root->PtLeft == NULL)
+					root->PtLeft = No;
+				else
+					No = root->PtLeft;
+			}else{
+				if(FractionCompareTo(root->PtElem,pelem) < 0){ // Direita
+					if(root->PtRight == NULL)
+						root->PtRight = No;
+					else
+						No = root->PtRight;
+				}else{
+					Error = REP_ELEM;
+					ABPNodeDestroy(&No);	//Destruir o Node porque não vai ser utilizado
+					return;
+				}
+			}
+		}
+	}
+	Error = OK;
+	ptree->Size++;
 }
 
 /* seleção não recursiva do mínimo da abp - non recursive selection of bst minimum */
 PtFraction ABPMin (PtABP ptree)
 {
-	/* Insira o seu código - Insert your code */
-	return NULL;
+	PtABP Tree = ptree;
+	// ABP não existente
+	if(Tree == NULL){
+		Error = NO_ABP;
+		return NULL;
+	}
+	// ABP vazia
+	if(!Tree->Root){
+		Error = ABP_EMPTY;
+		return NULL;
+	}
+	PtABPNode root = ptree->Root;
+	while(1){
+		if(root->PtLeft == NULL){
+			Error = OK;
+			return root->PtElem;
+		}
+		root = root->PtLeft;
+	}
+	return NULL; // Não deverá chegar aqui
 }
 
 /* seleção recursiva do máximo da abp - recursive selection of bst maximum */
 PtFraction ABPMax (PtABP ptree)
 {
-	/* Insira o seu código usando MaxTree - Insert your code using MaxTree */
-	return NULL;
+	PtABP Tree = ptree;
+	// ABP não existente
+	if(Tree == NULL){
+		Error = NO_ABP;
+		return NULL;
+	}
+	// ABP vazia
+	if(!Tree->Root){
+		Error = ABP_EMPTY;
+		return NULL;
+	}
+	Error = OK;
+	return MaxTree(ptree->Root);
 }
 
 /*******************************************************************************
@@ -173,8 +267,9 @@ PtFraction ABPMax (PtABP ptree)
 
 static PtFraction MaxTree (PtABPNode proot)
 {
-	/* Insira o seu código usando MaxTree - Insert your code using MaxTree */
-	return NULL;
+	if(proot->PtRight == NULL)
+		return proot->PtElem;
+	return MaxTree(proot->PtRight);
 }
 
 /* construtor cópia da abp fazendo uma travessia não recursiva em pré-ordem */
