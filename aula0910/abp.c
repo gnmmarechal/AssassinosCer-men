@@ -72,6 +72,10 @@ static PtQueue ABPFillQueue (PtABP);
 /* construtor da abp - bst constructor */
 PtABP ABPCreate (void)
 {
+	
+	
+	// Notas
+	// FillQueue e Copy não completos
 	PtABP arv;
 	arv = (PtABP) malloc (sizeof (struct abp));
 	if(arv == NULL){
@@ -276,9 +280,26 @@ static PtFraction MaxTree (PtABPNode proot)
 /* bst copy constructor making a non recursive traverse in preorder */
 PtABP ABPCopy (PtABP ptree)
 {
-	// Não copia só os nós mas também copia os elementos dos nós!
-	/* Insira o seu código - Insert your code */
-	return NULL;
+	// ABP não existente
+	if(ptree == NULL){
+		Error = NO_ABP;
+		return NULL;
+	}
+	PtABP arv;
+	arv = (PtABP) malloc (sizeof (struct abp));
+	if(arv == NULL){
+		Error = NO_MEM;
+		return NULL;
+	}	
+	arv->Size = 0;
+	arv->Root = NULL;
+	//
+	
+	
+	
+	
+	Error = OK;
+	return arv;
 }
 
 /*******************************************************************************
@@ -301,20 +322,83 @@ static PtQueue ABPFillQueue (PtABP ptree)
 /* Reunião de duas abps usando a função ABPFillQueue - Reunion of two bsts using ABPFillQueue */
 void ABPReunion (PtABP ptree1, PtABP ptree2)
 {
-    
+	if(ptree1 == NULL || ptree2 == NULL){
+		Error = NO_ABP;
+		return;
+	}
+    PtQueue fila = ABPFillQueue(ptree2);
+    if(fila == NULL){
+		Error = NO_MEM;
+		QueueDestroy(fila);
+		return;
+	}
+	while(!QueueIsEmpty(fila)){
+		ABPInsert(ptree1,fila->Head);
+		if(Error = NO_MEM)
+			return;
+		QueueDequeue(fila);		
+	}   
+    QueueDestroy(fila);
+    Error = OK;
 }
 		
 		
 /* Diferença de duas abps usando a função ABPFillQueue - Difference of two bsts using ABPFillQueue */
 void ABPDifference (PtABP ptree1, PtABP ptree2)
 {
-	/* Insira o seu código - Insert your code */
+	if(ptree1 == NULL || ptree2 == NULL){
+		Error = NO_ABP;
+		return;
+	}
+    PtQueue fila = ABPFillQueue(ptree2);
+    if(fila == NULL){
+		Error = NO_MEM;
+		QueueDestroy(fila);
+		return;
+	}
+	while(!QueueIsEmpty(fila)){
+		if(ABPSearch(ptree1,fila->Head) == 1)
+			ABPDelete(ptree1,fila->Head);
+		QueueDequeue(fila);		
+	}
+	QueueDestroy(fila);
+	Error = OK;
+	
 }
 
 /* Interseção de duas abps usando a função ABPFillQueue - Intersection of two bsts using ABPFillQueue */
 void ABPIntersection (PtABP ptree1, PtABP ptree2)
 {
-	/* Insira o seu código - Insert your code */
+	if(ptree1 == NULL || ptree2 == NULL){
+		Error = NO_ABP;
+		return;
+	}
+	PtQueue fila = ABPFillQueue(ptree1);
+	PtQueue filaR = QueueCreate(fila->Size); // Fila com os elementos a remover
+    if(fila == NULL || filaR == NULL){
+		Error = NO_MEM;
+		QueueDestroy(fila);
+		QueueDestroy(filaR);
+		return;
+	}
+	while(!QueueIsEmpty(fila)){
+		if(ABPSearch(ptree2,fila->Head) == 0){
+			if(QueueEnqueue(filaR, fila->Head)==2){
+				Error = NO_MEM;
+				QueueDestroy(fila);
+				QueueDestroy(filaR);
+				return;
+			}
+		}
+		QueueDequeue(fila);
+	}
+	while(!QueueIsEmpty(filaR)){
+		ABPDelete(filaR->Head);
+		QueueDequeue(filaR);
+	}
+	QueueDestroy(fila);
+	QueueDestroy(filaR);
+	Error = OK;
 }
 
 /******************************************************************************
