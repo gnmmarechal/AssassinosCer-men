@@ -74,8 +74,12 @@ PtABP ABPCreate (void)
 {
 	
 	
-	// Notas
-	// FillQueue e Copy não completos
+	/*Notas
+	 FillQueue não completo
+	 Copy, Reunion, Difference e Intersection com problemas
+	 linhas de código que davam erro estão comentada sendo que
+	 os resultados dão elementos vazios
+	*/ 
 	PtABP arv;
 	arv = (PtABP) malloc (sizeof (struct abp));
 	if(arv == NULL){
@@ -285,6 +289,50 @@ PtABP ABPCopy (PtABP ptree)
 		Error = NO_ABP;
 		return NULL;
 	}
+	
+	// Encher uma Stack com os elementos de ptree
+	PtStack p1 = StackCreate(ptree->Size);
+	PtStack p2 = StackCreate(ptree->Size);
+	if(p1 == NULL || p2 == NULL){
+		Error = NO_MEM;
+		return NULL;
+	}
+	if(StackPush(p1,ptree->Root)==2){
+		Error = NO_MEM;
+		StackDestroy(&p1); 
+		StackDestroy(&p2);
+		return NULL;
+	}
+	PtABPNode elem;
+	while(StackIsEmpty(p1)==0){
+		// elem = p2->Top;
+		if(StackPush(p2,&elem)==2){
+			Error = NO_MEM;
+			StackDestroy(&p1); 
+			StackDestroy(&p2);
+			return NULL;
+		}
+		StackPop(p1,&elem);
+		if(elem->PtRight!= NULL){ // Adiciona elemento da direita
+			if(StackPush(p1,elem->PtRight)==2){
+				Error = NO_MEM;
+				StackDestroy(&p1); 
+				StackDestroy(&p2);
+				return NULL;
+			}
+		}	
+		if(elem->PtLeft != NULL){ // Adiciona elemento da esquerda
+			if(StackPush(p1,elem->PtLeft)==2){
+				Error = NO_MEM;
+				StackDestroy(&p1); 
+				StackDestroy(&p2);
+				return NULL;
+			}
+		}
+		
+	}
+	StackDestroy(&p1); 
+	
 	PtABP arv;
 	arv = (PtABP) malloc (sizeof (struct abp));
 	if(arv == NULL){
@@ -293,11 +341,18 @@ PtABP ABPCopy (PtABP ptree)
 	}	
 	arv->Size = 0;
 	arv->Root = NULL;
-	//
-	
-	
-	
-	
+	//Encher a àrvore usando os elementos da fila2
+	while(StackIsEmpty(p2)==0){
+		//elem = p2->Top;
+		ABPInsert(arv,elem->PtElem);
+		if(Error == NO_MEM){
+			ABPDestroy(&arv);
+			StackDestroy(&p2);
+			return NULL;
+		}
+		StackPop(p2,elem);
+	}
+	StackDestroy(&p2);
 	Error = OK;
 	return arv;
 }
@@ -329,16 +384,18 @@ void ABPReunion (PtABP ptree1, PtABP ptree2)
     PtQueue fila = ABPFillQueue(ptree2);
     if(fila == NULL){
 		Error = NO_MEM;
-		QueueDestroy(fila);
+		QueueDestroy(&fila);
 		return;
 	}
-	while(!QueueIsEmpty(fila)){
-		ABPInsert(ptree1,fila->Head);
-		if(Error = NO_MEM)
+	PtABPNode elem;
+	while(QueueIsEmpty(fila)==0){
+		//elem = fila->Head
+		ABPInsert(ptree1,elem->PtElem);
+		if(Error == NO_MEM)	
 			return;
-		QueueDequeue(fila);		
+		QueueDequeue(fila,elem);		
 	}   
-    QueueDestroy(fila);
+    QueueDestroy(&fila);
     Error = OK;
 }
 		
@@ -353,15 +410,17 @@ void ABPDifference (PtABP ptree1, PtABP ptree2)
     PtQueue fila = ABPFillQueue(ptree2);
     if(fila == NULL){
 		Error = NO_MEM;
-		QueueDestroy(fila);
+		QueueDestroy(&fila);
 		return;
 	}
-	while(!QueueIsEmpty(fila)){
-		if(ABPSearch(ptree1,fila->Head) == 1)
-			ABPDelete(ptree1,fila->Head);
-		QueueDequeue(fila);		
+	PtABPNode elem;
+	while(QueueIsEmpty(fila)==0){
+		//elem = fila->Head
+		if(ABPSearch(ptree1,elem->PtElem) == 1)
+			ABPDelete(ptree1,elem->PtElem);
+		QueueDequeue(fila,elem);		
 	}
-	QueueDestroy(fila);
+	QueueDestroy(&fila);
 	Error = OK;
 	
 }
@@ -374,30 +433,33 @@ void ABPIntersection (PtABP ptree1, PtABP ptree2)
 		return;
 	}
 	PtQueue fila = ABPFillQueue(ptree1);
-	PtQueue filaR = QueueCreate(fila->Size); // Fila com os elementos a remover
+	PtQueue filaR = QueueCreate(ptree1->Size); // Fila com os elementos a remover
     if(fila == NULL || filaR == NULL){
 		Error = NO_MEM;
-		QueueDestroy(fila);
-		QueueDestroy(filaR);
+		QueueDestroy(&fila);
+		QueueDestroy(&filaR);
 		return;
 	}
-	while(!QueueIsEmpty(fila)){
-		if(ABPSearch(ptree2,fila->Head) == 0){
-			if(QueueEnqueue(filaR, fila->Head)==2){
+	PtABPNode elem;
+	while(QueueIsEmpty(fila)==0){
+		//elem = fila->Head
+		if(ABPSearch(ptree2,elem->PtElem) == 0){
+			if(QueueEnqueue(filaR,elem)==2){
 				Error = NO_MEM;
-				QueueDestroy(fila);
-				QueueDestroy(filaR);
+				QueueDestroy(&fila);
+				QueueDestroy(&filaR);
 				return;
 			}
 		}
-		QueueDequeue(fila);
+		QueueDequeue(fila,elem);
 	}
-	while(!QueueIsEmpty(filaR)){
-		ABPDelete(filaR->Head);
-		QueueDequeue(filaR);
+	while(QueueIsEmpty(filaR)==0){
+		//elem = filaR->Head;
+		ABPDelete(ptree1,elem->PtElem);
+		QueueDequeue(filaR,elem);
 	}
-	QueueDestroy(fila);
-	QueueDestroy(filaR);
+	QueueDestroy(&fila);
+	QueueDestroy(&filaR);
 	Error = OK;
 }
 
